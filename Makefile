@@ -89,6 +89,7 @@ release: all docs $(SMF_MANIFESTS)
 	cp -r   $(ROOT)/bin \
 		$(ROOT)/boot \
 		$(ROOT)/build \
+		$(ROOT)/etc \
 		$(ROOT)/lib \
 		$(ROOT)/node_modules \
 		$(ROOT)/package.json \
