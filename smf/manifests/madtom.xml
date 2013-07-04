@@ -23,7 +23,7 @@
 
 	<exec_method type="method"
 		     name="start"
-		     exec="sudo -u madtom node server.js 80 &amp;"
+		     exec="sudo -u madtom node server.js -f /opt/smartdc/madtom/etc/checker-config.json -f /opt/smartdc/madtom/etc/checker-hosts.json -p 80 &amp;"
 		     timeout_seconds="30">
 	    <method_context working_directory="/opt/smartdc/madtom">
                 <!-- Even though this says 'root' we run as madtom. -->
@@ -42,7 +42,6 @@
 		     name="stop"
 		     exec=":kill"
 		     timeout_seconds="30" />
-
 
 	<stability value='Unstable' />
 	<template>

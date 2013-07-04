@@ -44,9 +44,20 @@ function manta_add_madtom_to_path {
 }
 
 function manta_setup_madtom {
-    local crontab=/tmp/.manta_madtom_cron
-    crontab -l > $crontab
-    [[ $? -eq 0 ]] || fatal "Unable to write to $crontab"
+    local SIZE=$(json -f ${METADATA} SIZE)
+
+    mv /opt/smartdc/madtom/etc/checker-$SIZE.json \
+       /opt/smartdc/madtom/etc/checker-config.json
+    if [[ $? != 0 ]]; then
+        echo "Unable to move /opt/smartdc/madtom/etc/checker-$SIZE.json."
+        exit 1;
+    fi
+
+    /opt/smartdc/madtom/bin/generate_hosts_config_$SIZE.sh
+    if [[ $? != 0 ]]; then
+        echo "Unable to generate /opt/smartdc/madtom/etc/checker-hosts.json."
+        exit 1;
+    fi
 
     #Server
     svccfg import /opt/smartdc/madtom/smf/manifests/madtom.xml \
