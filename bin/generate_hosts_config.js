@@ -417,7 +417,7 @@ vasync.pipeline({
                                 }
                                 var opers = results.operations;
                                 _self['CNAPI_SERVERS'] = {};
-                                for (var j = 0; i < opers.length; ++j) {
+                                for (var j = 0; j < opers.length; ++j) {
                                         var uuid = servers[j];
                                         var res = opers[j].result;
                                         _self['CNAPI_SERVERS'][uuid] = res;
