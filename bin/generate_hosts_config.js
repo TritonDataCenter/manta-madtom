@@ -557,6 +557,7 @@ vasync.pipeline({
                                         continue;
                                 }
 
+                                var hdc = sv.sysinfo['Datacenter Name'];
                                 var nics = vm.nics;
                                 var ip = null;
                                 for (var j = 0; j < nics.length; ++j) {
@@ -573,7 +574,7 @@ vasync.pipeline({
                                         'hostType': vm.tags.manta_role,
                                         'ip': ip,
                                         'uuid': uuid,
-                                        'datacenter': sv.datacenter,
+                                        'datacenter': hdc,
                                         'server': server_uuid
                                 });
                         }
@@ -583,6 +584,7 @@ vasync.pipeline({
                                 server_uuid = agents[i];
                                 sv = _self['CNAPI_SERVERS'][server_uuid];
                                 ip = null;
+                                hdc = sv.sysinfo['Datacenter Name'];
                                 nics = sv.sysinfo['Network Interfaces'];
                                 var nns = Object.keys(nics);
                                 for (j = 0; j < nns.length; ++j) {
@@ -598,7 +600,7 @@ vasync.pipeline({
                                         'hostType': 'agent',
                                         'ip': ip,
                                         'uuid': server_uuid,
-                                        'datacenter': sv.datacenter,
+                                        'datacenter': hdc,
                                         'server': server_uuid
                                 });
                         }

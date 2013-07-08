@@ -83,8 +83,7 @@
     {
       "hostType": "nameservice",
       "processes": [
-        { "processType": "binder", "port": 53 },
-        { "processType": "zookeeper", "port": 2181 }
+        { "processType": "binder", "port": 53 }
       ]
     },
     {
