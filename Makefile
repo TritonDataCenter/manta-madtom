@@ -94,6 +94,7 @@ release: all docs $(SMF_MANIFESTS)
 		$(ROOT)/node_modules \
 		$(ROOT)/package.json \
 		$(ROOT)/sapi_manifests \
+		$(ROOT)/server.js \
 		$(ROOT)/smf \
 		$(TMPDIR)/root/opt/smartdc/$(NAME)
 	#We remove build/prebuilt-* because those symlinks will cause tar
