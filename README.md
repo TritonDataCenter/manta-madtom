@@ -47,7 +47,7 @@ here is coal's GZ):
     $ export sdc_dns=$(ssh -q head "vmadm list -o alias,nics.0.ip" | \
                        grep binder | tr -s ' ' | cut -d ' ' -f 2)
     $ ./bin/generate_hosts_config.js -d $sdc_datacenter:$sdc_dns \
-       >/var/tmp/madtom-hosts.json
+       -l $sdc_datacenter -f /var/tmp/madtom-hosts.json | bunyan
 
 Then fire up the madtom server (which is a very thin shim over the node-checker
 server):

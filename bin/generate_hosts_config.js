@@ -5,13 +5,14 @@
 var assert = require('assert-plus');
 var bunyan = require('bunyan');
 var dns = require('native-dns');
+var fs = require('fs');
 var getopt = require('posix-getopt');
 var path = require('path');
 var sdc = require('sdc-clients');
 var vasync = require('vasync');
 
 var LOG = bunyan.createLogger({
-        'level': (process.env.LOG_LEVEL || 'info'),
+        'level': (process.env.LOG_LEVEL || 'debug'),
         'name': 'generate_hosts_config',
         'stream': process.stdout,
         'serializers': bunyan.stdSerializers
@@ -27,6 +28,8 @@ function usage(msg) {
         }
         var str  = 'usage: ' + path.basename(process.argv[1]);
         str += ' [-d datacenter:dns_ip]';
+        str += ' [-f output_file]';
+        str += ' [-l localDc]';
         console.error(str);
         process.exit(1);
 }
@@ -36,7 +39,7 @@ function parseOptions() {
         var opts = {
                 'dc': {}
         };
-        var parser = new getopt.BasicParser('d:',
+        var parser = new getopt.BasicParser('d:f:l:',
                                             process.argv);
         while ((option = parser.getopt()) !== undefined && !option.error) {
                 switch (option.option) {
@@ -51,14 +54,33 @@ function parseOptions() {
                         opts.dc[dc] = {};
                         opts.dc[dc]['DNS'] = dnsIp;
                         break;
+                case 'f':
+                        opts.outputFileName = option.optarg;
+                        break;
+                case 'l':
+                        opts.localDc = option.optarg;
+                        break;
                 default:
                         usage('Unknown option: ' + option.option);
                         break;
                 }
         }
 
+        if (!opts.outputFileName) {
+                usage('-f [output_file] is a required argument');
+        }
+
         if (Object.keys(opts.dc).length === 0) {
                 usage('-d [datacenter:dns_ip] is a required argument.');
+        }
+
+        if (!opts.localDc) {
+                usage('-l [local_dc] is a required argument');
+        }
+
+        if (Object.keys(opts.dc).indexOf(opts.localDc) === -1) {
+                usage('local_dc ' + opts.localDc +
+                      ' not found in list of dcs: ' + Object.keys(opts.dc));
         }
 
         return (opts);
@@ -70,9 +92,17 @@ function lookup(opts, cb) {
         assert.string(opts.ip, 'opts.ip');
         assert.optionalNumber(opts.port, 'opts.port');
 
+        var self = this;
+
         var host = opts.ip;
         var port = opts.port || 53;
         var domainName = opts.domainName;
+
+        self.log.debug({
+                'host': host,
+                'port': port,
+                'domainName': domainName
+        }, 'dns lookup');
 
         var question = dns.Question({
                 name: domainName,
@@ -107,6 +137,13 @@ function lookup(opts, cb) {
                         cb(error);
                         return;
                 }
+                self.log.debug({
+                        'host': host,
+                        'port': port,
+                        'domainName': domainName,
+                        'answer': answers[0]
+                }, 'dns lookup complete');
+
                 //We could randomly return an answer...
                 cb(null, answers[0]);
         });
@@ -134,7 +171,7 @@ function getClients(opts, cb) {
                                         'ip': opts.dns,
                                         'domainName': hn('sapi')
                                 };
-                                lookup(o, function (err, a) {
+                                lookup.call(self, o, function (err, a) {
                                         if (err) {
                                                 subcb(err);
                                                 return;
@@ -144,6 +181,12 @@ function getClients(opts, cb) {
                                                 url: url(a),
                                                 agent: false
                                         });
+                                        self.log.debug({
+                                                'client': 'sapi',
+                                                'dns': opts.dns,
+                                                'dc': opts.dc,
+                                                'url': url(a)
+                                        });
                                         subcb();
                                 });
                         },
@@ -152,7 +195,7 @@ function getClients(opts, cb) {
                                         'ip': opts.dns,
                                         'domainName': hn('cnapi')
                                 };
-                                lookup(o, function (err, a) {
+                                lookup.call(self, o, function (err, a) {
                                         if (err) {
                                                 subcb(err);
                                                 return;
@@ -162,6 +205,12 @@ function getClients(opts, cb) {
                                                 url: url(a),
                                                 agent: false
                                         });
+                                        self.log.debug({
+                                                'client': 'cnapi',
+                                                'dns': opts.dns,
+                                                'dc': opts.dc,
+                                                'url': url(a)
+                                        });
                                         subcb();
                                 });
                         },
@@ -170,7 +219,7 @@ function getClients(opts, cb) {
                                         'ip': opts.dns,
                                         'domainName': hn('vmapi')
                                 };
-                                lookup(o, function (err, a) {
+                                lookup.call(self, o, function (err, a) {
                                         if (err) {
                                                 subcb(err);
                                                 return;
@@ -180,15 +229,32 @@ function getClients(opts, cb) {
                                                 url: url(a),
                                                 agent: false
                                         });
+                                        self.log.debug({
+                                                'client': 'vmapi',
+                                                'dns': opts.dns,
+                                                'dc': opts.dc,
+                                                'url': url(a)
+                                        });
                                         subcb();
                                 });
                         },
                         function ufds(_, subcb) {
+                                //Only init ufds in the local dc...
+                                if (opts.dc !== self['LOCAL_DC']) {
+                                        self.log.debug({
+                                                'client': 'ufds',
+                                                'dc': opts.dc,
+                                                'localDc': self['LOCAL_DC']
+                                        }, 'not initing ufds, not in local dc');
+                                        subcb();
+                                        return;
+                                }
+
                                 var o = {
                                         'ip': opts.dns,
                                         'domainName': hn('ufds')
                                 };
-                                lookup(o, function (err, a) {
+                                lookup.call(self, o, function (err, a) {
                                         if (err) {
                                                 subcb(err);
                                                 return;
@@ -203,7 +269,22 @@ function getClients(opts, cb) {
                                                         expiry: 300
                                                 }
                                         });
-                                        clients['UFDS'].on('ready', subcb);
+                                        self.log.debug({
+                                                'client': 'ufds',
+                                                'dns': opts.dns,
+                                                'dc': opts.dc,
+                                                'url': u
+                                        }, 'connecting to ufds');
+
+                                        function oc(err2) {
+                                                self.log.debug({
+                                                        'url': u,
+                                                        'err': err2
+                                                }, 'ufds onReady');
+                                                subcb(err2);
+                                        }
+
+                                        clients['UFDS'].on('ready', oc);
                                 });
                         }
                 ]
@@ -296,14 +377,23 @@ var _self = this;
 _self.log = LOG;
 var _opts = parseOptions();
 _self['DC'] = _opts.dc;
-var fdc = Object.keys(_self['DC'])[0];
+_self['OUTPUT_FILENAME'] = _opts.outputFileName;
+_self['LOCAL_DC'] = _opts.localDc;
+
+_self.log.debug({
+        'dc': _self['DC'],
+        'outputFile': _self['OUTPUT_FILENAME'],
+        'localDc': _self['LOCAL_DC']
+});
 
 vasync.pipeline({
         'funcs': [
                 setupSdcClients.bind(_self),
                 function lookupPoseidon(_, subcb) {
-                        //Choose a random one, it doesn't matter
-                        var ufds = _self.DC[fdc].CLIENT.UFDS;
+                        _self.log.debug({
+                                'localDc': _self['LOCAL_DC']
+                        }, 'connecting to ufds in dc');
+                        var ufds = _self.DC[_self['LOCAL_DC']].CLIENT.UFDS;
                         ufds.getUser('poseidon', function (err, user) {
                                 if (err) {
                                         subcb(err);
@@ -317,8 +407,10 @@ vasync.pipeline({
                         });
                 },
                 function lookupMantaApplication(_, subcb) {
-                        //Choose a random one, it doesn't matter
-                        var sapi = _self.DC[fdc].CLIENT.SAPI;
+                        _self.log.debug({
+                                'localDc': _self['LOCAL_DC']
+                        }, 'connecting to sapi in dc to get manta application');
+                        var sapi = _self.DC[_self['LOCAL_DC']].CLIENT.SAPI;
                         var search = {
                                 'name': 'manta',
                                 'owner_uuid':  _self['POSEIDON'].uuid,
@@ -331,7 +423,7 @@ vasync.pipeline({
                                 }
                                 if (apps.length < 1) {
                                         subcb(new Error('unable to find the ' +
-                                                        'manta applcation'));
+                                                        'manta application'));
                                         return;
                                 }
                                 _self['MANTA'] = apps[0];
@@ -342,9 +434,12 @@ vasync.pipeline({
                         });
                 },
                 function lookupInstances(_, subcb) {
-                        var sapi = _self.DC[fdc].CLIENT.SAPI;
+                        _self.log.debug({
+                                'localDc': _self['LOCAL_DC']
+                        }, 'connecting to sapi in dc to lookup instances');
+                        var sapi = _self.DC[_self['LOCAL_DC']].CLIENT.SAPI;
 
-                        function onResults(err, objs) {
+                        function onr(err, objs) {
                                 if (err) {
                                         subcb(err);
                                         return;
@@ -368,9 +463,13 @@ vasync.pipeline({
                                 subcb();
                         }
 
-                        sapi.getApplicationObjects(_self.MANTA.uuid, onResults);
+                        var op = {
+                                'include_master': true
+                        };
+                        sapi.getApplicationObjects(_self.MANTA.uuid, op, onr);
                 },
                 function lookupVms(_, subcb) {
+                        _self.log.debug('looking up vms');
                         var inputs = Object.keys(_self['SAPI_INSTANCES']).map(
                                 function (k) {
                                         return (_self['SAPI_INSTANCES'][k]);
@@ -398,6 +497,7 @@ vasync.pipeline({
                         });
                 },
                 function lookupServers(_, subcb) {
+                        _self.log.debug('looking up servers');
                         var servers = [];
                         var vms = Object.keys(_self['VMAPI_VMS']);
                         for (var i = 0; i < vms.length; ++i) {
@@ -430,6 +530,7 @@ vasync.pipeline({
                         });
                 },
                 function gatherHosts(_, subcb) {
+                        _self.log.debug('gathering host information');
                         var instances = Object.keys(_self['SAPI_INSTANCES']);
                         var agents = [];
                         _self['HOSTS'] = [];
@@ -511,9 +612,8 @@ vasync.pipeline({
         }
 
         //Ok, now output hosts...
-        console.log(JSON.stringify({
-                hosts: _self['HOSTS']
-        }, null, 2));
+        var serialized = JSON.stringify({ hosts: _self['HOSTS']}, null, 2);
+        fs.writeFileSync(_self['OUTPUT_FILENAME'], serialized);
         _self.log.debug('Done.');
         process.exit(0);
 });

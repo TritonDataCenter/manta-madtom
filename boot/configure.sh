@@ -46,10 +46,10 @@ function manta_add_madtom_to_path {
 function manta_setup_madtom {
     local SIZE=$(json -f ${METADATA} SIZE)
 
-    mv /opt/smartdc/madtom/etc/checker-$SIZE.json \
+    ln -s /opt/smartdc/madtom/etc/checker-$SIZE.json \
        /opt/smartdc/madtom/etc/checker-config.json
     if [[ $? != 0 ]]; then
-        echo "Unable to move /opt/smartdc/madtom/etc/checker-$SIZE.json."
+        echo "Unable to link /opt/smartdc/madtom/etc/checker-$SIZE.json."
         exit 1;
     fi
 
