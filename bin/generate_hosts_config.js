@@ -27,9 +27,11 @@ function usage(msg) {
                 console.error(msg);
         }
         var str  = 'usage: ' + path.basename(process.argv[1]);
+        str += ' [-a agentNetworkTag]';
         str += ' [-d datacenter:dns_ip]';
         str += ' [-f output_file]';
         str += ' [-l localDc]';
+        str += ' [-n mantaNetworkTag]';
         console.error(str);
         process.exit(1);
 }
@@ -39,10 +41,13 @@ function parseOptions() {
         var opts = {
                 'dc': {}
         };
-        var parser = new getopt.BasicParser('d:f:l:',
+        var parser = new getopt.BasicParser('d:f:l:n:',
                                             process.argv);
         while ((option = parser.getopt()) !== undefined && !option.error) {
                 switch (option.option) {
+                case 'a':
+                        opts.agentNetworkTag = option.optarg;
+                        break;
                 case 'd':
                         var o = option.optarg;
                         var parts = o.split(':');
@@ -59,6 +64,9 @@ function parseOptions() {
                         break;
                 case 'l':
                         opts.localDc = option.optarg;
+                        break;
+                case 'n':
+                        opts.networkTag = option.optarg;
                         break;
                 default:
                         usage('Unknown option: ' + option.option);
@@ -82,6 +90,11 @@ function parseOptions() {
                 usage('local_dc ' + opts.localDc +
                       ' not found in list of dcs: ' + Object.keys(opts.dc));
         }
+
+        //Servers don't have an ip4addr for the nic tagged with 'manta', so
+        // we default 'admin' here.
+        opts.agentNetworkTag = opts.agentNetworkTag || 'admin';
+        opts.networkTag = opts.networkTag || 'manta';
 
         return (opts);
 }
@@ -379,11 +392,16 @@ var _opts = parseOptions();
 _self['DC'] = _opts.dc;
 _self['OUTPUT_FILENAME'] = _opts.outputFileName;
 _self['LOCAL_DC'] = _opts.localDc;
+_self['NETWORK_TAG'] = _opts.networkTag;
+_self['AGENT_NETWORK_TAG'] = _opts.agentNetworkTag;
+
 
 _self.log.debug({
         'dc': _self['DC'],
         'outputFile': _self['OUTPUT_FILENAME'],
-        'localDc': _self['LOCAL_DC']
+        'localDc': _self['LOCAL_DC'],
+        'networkTag': _self['NETWORK_TAG'],
+        'agentNetworkTag': _self['AGENT_NETWORK_TAG']
 });
 
 vasync.pipeline({
@@ -562,7 +580,8 @@ vasync.pipeline({
                                 var ip = null;
                                 for (var j = 0; j < nics.length; ++j) {
                                         var nic = nics[j];
-                                        if (nic.nic_tag === 'manta') {
+                                        var nt = _self['NETWORK_TAG'];
+                                        if (nic.nic_tag === nt) {
                                                 ip = nic.ip;
                                                 break;
                                         }
@@ -589,11 +608,9 @@ vasync.pipeline({
                                 for (j = 0; j < nns.length; ++j) {
                                         var nn = nns[j];
                                         nic = nics[nn];
-                                        //Servers don't have an ip4addr for
-                                        // the nic tagged with 'manta', so
-                                        // we use 'admin here'.
-                                        if (nic['NIC Names'].indexOf('admin')
-                                            !== -1) {
+                                        nt = _self['AGENT_NETWORK_TAG'];
+                                        if (nic['NIC Names'].indexOf(nt) !==
+                                            -1) {
                                                 ip = nic['ip4addr'];
                                                 break;
                                         }
