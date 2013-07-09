@@ -562,8 +562,7 @@ vasync.pipeline({
                                 var ip = null;
                                 for (var j = 0; j < nics.length; ++j) {
                                         var nic = nics[j];
-                                        //TODO: Is this always correct?
-                                        if (nic.nic_tag === 'admin') {
+                                        if (nic.nic_tag === 'manta') {
                                                 ip = nic.ip;
                                                 break;
                                         }
@@ -590,6 +589,9 @@ vasync.pipeline({
                                 for (j = 0; j < nns.length; ++j) {
                                         var nn = nns[j];
                                         nic = nics[nn];
+                                        //Servers don't have an ip4addr for
+                                        // the nic tagged with 'manta', so
+                                        // we use 'admin here'.
                                         if (nic['NIC Names'].indexOf('admin')
                                             !== -1) {
                                                 ip = nic['ip4addr'];
