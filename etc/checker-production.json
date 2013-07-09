@@ -83,7 +83,8 @@
     {
       "hostType": "nameservice",
       "processes": [
-        { "processType": "binder", "port": 53 }
+        { "processType": "binder", "port": 53 },
+        { "processType": "zookeeper", "port": 2181 }
       ]
     },
     {
@@ -201,8 +202,7 @@
     },
     {
       "processType": "zookeeper",
-      "checkerType": "zookeeper",
-      "path": "/zookeeper/quota"
+      "checkerType": "zookeeper"
     }
   ]
 }

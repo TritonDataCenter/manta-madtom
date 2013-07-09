@@ -181,8 +181,7 @@
     },
     {
       "processType": "zookeeper",
-      "checkerType": "zookeeper",
-      "path": "/zookeeper/quota"
+      "checkerType": "zookeeper"
     }
   ]
 }
