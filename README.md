@@ -52,11 +52,11 @@ here is coal's GZ):
 Then fire up the madtom server (which is a very thin shim over the node-checker
 server):
 
-    $ node ./server.js -c ./etc/checker-coal.json -c /var/tmp/madtom-hosts.json |
-      bunyan
+    $ node ./server.js -c ./etc/checker-coal.json \
+      -c /var/tmp/madtom-hosts.json | bunyan
 
 Note that the order of `-c` is significant.  Finally, point your browser at:
 
-    http://localhost:8080/checker.html
+    http://localhost:8080
 
 You should see the status of all processes in coal.
