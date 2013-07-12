@@ -1,8 +1,7 @@
 #!/bin/bash
 
 ###############################################################################
-# This script is only to be used within coal.  It may work in a bh* setting,
-# but there's no guarentee at this point.  It will not work in prod.
+# This script is only to be used within coal/lab.  It will not work in prod.
 ###############################################################################
 
 set -o xtrace
@@ -26,7 +25,8 @@ fi
 DIR=$(dirname $0)
 OUT=/opt/smartdc/madtom/etc/checker-hosts.json
 
-$DIR/generate_hosts_config.js -d $DATACENTER:$DNS -l $DATACENTER -f $OUT
+$DIR/generate_hosts_config.js -d $DATACENTER:$DNS -l $DATACENTER -f $OUT \
+    -a admin -n admin
 if [[ $? != 0 ]]; then
     echo 'generate_hosts_config.js failed.'
     exit 1;

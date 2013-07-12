@@ -1,0 +1,196 @@
+{
+  "hostTypes": [
+    {
+      "hostType": "loadbalancer",
+      "processes": [
+        { "processType": "stud", "port": 443 },
+        { "processType": "haproxy", "port": 80 }
+      ]
+    },
+    {
+      "hostType": "webapi",
+      "processes": [
+        { "processType": "haproxy", "port": 80 },
+        { "processType": "muskie", "port": 8081 },
+        { "processType": "muskie", "port": 8082 },
+        { "processType": "muskie", "port": 8083 },
+        { "processType": "muskie", "port": 8084 }
+      ]
+    },
+    {
+      "hostType": "authcache",
+      "processes": [
+        { "processType": "redis", "port": 6379 }
+      ]
+    },
+    {
+      "hostType": "electric-moray",
+      "processes": [
+        { "processType": "haproxy-tcp", "port": 2020 },
+        { "processType": "electric-moray", "port": 2021 },
+        { "processType": "electric-moray", "port": 2022 },
+        { "processType": "electric-moray", "port": 2023 },
+        { "processType": "electric-moray", "port": 2024 }
+      ]
+    },
+    {
+      "hostType": "moray",
+      "processes": [
+        { "processType": "haproxy-tcp", "port": 2020 },
+        { "processType": "moray", "port": 2021 },
+        { "processType": "moray", "port": 2022 },
+        { "processType": "moray", "port": 2023 },
+        { "processType": "moray", "port": 2024 }
+      ]
+    },
+    {
+      "hostType": "postgres",
+      "processes": [
+        { "processType": "postgres", "port": 5432 },
+        { "processType": "pg-backup", "port": 12345 }
+      ]
+    },
+    {
+      "hostType": "storage",
+      "processes": [
+        { "processType": "mako", "port": 80 }
+      ]
+    },
+    {
+      "hostType": "agent",
+      "processes": [
+        { "processType": "agent", "port": 9080 }
+      ]
+    },
+    {
+      "hostType": "jobsupervisor",
+      "processes": [
+        { "processType": "supervisor", "port": 80 }
+      ]
+    },
+    {
+      "hostType": "nameservice",
+      "processes": [
+        { "processType": "binder", "port": 53 },
+        { "processType": "zookeeper", "port": 2181 }
+      ]
+    },
+    {
+      "hostType": "medusa",
+      "processes": [
+        { "processType": "medusa", "port": 8381 }
+      ]
+    },
+    {
+      "hostType": "jobpuller",
+      "processes": [
+        { "processType": "noop" }
+      ]
+    },
+    {
+      "hostType": "ops",
+      "processes": [
+        { "processType": "manowar", "port": 80 }
+      ]
+    },
+    {
+      "hostType": "workflow",
+      "processes": [
+        { "processType": "workflow", "port": 80 }
+      ]
+    }
+  ],
+  "processTypes": [
+    {
+      "processType": "agent",
+      "checkerType": "http",
+      "path": "/kang/snapshot",
+      "secure": false
+    },
+    {
+      "processType": "binder",
+      "checkerType": "dns",
+      "domainName": "1.moray.coal.joyent.us"
+    },
+    {
+      "processType": "electric-moray",
+      "checkerType": "moray",
+      "bucket": "manta"
+    },
+    {
+      "processType": "haproxy",
+      "checkerType": "http",
+      "path": "/ping",
+      "secure": false
+    },
+    {
+      "processType": "haproxy-tcp",
+      "checkerType": "tcp"
+    },
+    {
+      "processType": "mako",
+      "checkerType": "http",
+      "path": "/50x.html",
+      "secure": false
+    },
+    {
+      "processType": "manowar",
+      "checkerType": "http",
+      "path": "/ping",
+      "secure": false
+    },
+    {
+      "processType": "medusa",
+      "checkerType": "http",
+      "path": "/status",
+      "secure": false
+    },
+    {
+      "processType": "muskie",
+      "checkerType": "http",
+      "path": "/ping",
+      "secure": false
+    },
+    {
+      "processType": "moray",
+      "checkerType": "moray"
+    },
+    {
+      "processType": "noop",
+      "checkerType": "noop"
+    },
+    {
+      "processType": "pg-backup",
+      "checkerType": "tcp"
+    },
+    {
+      "processType": "postgres",
+      "checkerType": "postgres",
+      "username": "postgres"
+    },
+    {
+      "processType": "redis",
+      "checkerType": "redis"
+    },
+    {
+      "processType": "stud",
+      "checkerType": "http",
+      "path": "/ping",
+      "secure": true
+    },
+    {
+      "processType": "supervisor",
+      "checkerType": "http",
+      "path": "/kang/snapshot",
+      "secure": false
+    },
+    {
+      "processType": "workflow",
+      "checkerType": "tcp"
+    },
+    {
+      "processType": "zookeeper",
+      "checkerType": "zookeeper"
+    }
+  ]
+}

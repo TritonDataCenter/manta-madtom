@@ -41,7 +41,7 @@ function parseOptions() {
         var opts = {
                 'dc': {}
         };
-        var parser = new getopt.BasicParser('d:f:l:n:',
+        var parser = new getopt.BasicParser('a:d:f:l:n:',
                                             process.argv);
         while ((option = parser.getopt()) !== undefined && !option.error) {
                 switch (option.option) {
