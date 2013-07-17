@@ -84,7 +84,7 @@
     {
       "hostType": "jobpuller",
       "processes": [
-        { "processType": "noop" }
+        { "processType": "wrasse", "port": 80 }
       ]
     },
     {
@@ -156,10 +156,6 @@
       "checkerType": "moray"
     },
     {
-      "processType": "noop",
-      "checkerType": "noop"
-    },
-    {
       "processType": "pg-backup",
       "checkerType": "tcp"
     },
@@ -187,6 +183,12 @@
     {
       "processType": "workflow",
       "checkerType": "tcp"
+    },
+    {
+      "processType": "wrasse",
+      "checkerType": "http",
+      "path": "/ping",
+      "secure": false
     },
     {
       "processType": "zookeeper",

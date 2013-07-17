@@ -96,7 +96,7 @@
     {
       "hostType": "jobpuller",
       "processes": [
-        { "processType": "noop" }
+        { "processType": "wrasse", "port": 80 }
       ]
     },
     {
@@ -168,10 +168,6 @@
       "checkerType": "moray"
     },
     {
-      "processType": "noop",
-      "checkerType": "noop"
-    },
-    {
       "processType": "pg-backup",
       "checkerType": "tcp"
     },
@@ -194,6 +190,12 @@
       "processType": "supervisor",
       "checkerType": "http",
       "path": "/kang/snapshot",
+      "secure": false
+    },
+    {
+      "processType": "wrasse",
+      "checkerType": "http",
+      "path": "/ping",
       "secure": false
     },
     {
