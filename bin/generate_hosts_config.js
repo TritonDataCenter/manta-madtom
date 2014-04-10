@@ -596,7 +596,7 @@ vasync.pipeline({
 
                                 if (!ip) {
                                         var m = 'vm doesnt have nics';
-                                        log.error({
+                                        _self.log.error({
                                                 'uuid': uuid,
                                                 'vm': vm
                                         }, m);
