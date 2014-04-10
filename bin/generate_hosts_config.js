@@ -169,6 +169,7 @@ function getClients(opts, cb) {
         var self = this;
         var clients = {};
 
+        //TODO: This is obviously wrong for external joyent
         function hn(svc) {
                 return (svc + '.' + opts.dc + '.joyent.us');
         }
@@ -272,6 +273,8 @@ function getClients(opts, cb) {
                                                 subcb(err);
                                                 return;
                                         }
+                                        //TODO: These creds need to come out of
+                                        // here...
                                         var u = 'ldaps://' + a;
                                         clients['UFDS'] = new sdc.UFDS({
                                                 url: u,
@@ -344,6 +347,7 @@ function findVm(instance, cb) {
                 vmapi.getVm({ uuid: uuid }, cb);
                 return;
         } else {
+                //TODO: Can we remove this section now?
                 var dcs = Object.keys(self.DC);
                 vasync.forEachParallel({
                         'inputs': dcs.map(function (d) {
@@ -559,7 +563,10 @@ vasync.pipeline({
                                 var vm = _self['VMAPI_VMS'][uuid];
                                 var server_uuid = vm.server_uuid;
                                 var sv = _self['CNAPI_SERVERS'][server_uuid];
+
                                 //Save compute servers for agents...
+                                // This also filters out compute instances
+                                // from the list of things to monitor.
                                 if (vm.tags &&
                                     vm.tags.manta_role === 'compute') {
                                         if (agents.indexOf(server_uuid) ===
@@ -585,6 +592,15 @@ vasync.pipeline({
                                                 ip = nic.ip;
                                                 break;
                                         }
+                                }
+
+                                if (!ip) {
+                                        var m = 'vm doesnt have nics';
+                                        log.error({
+                                                'uuid': uuid,
+                                                'vm': vm
+                                        }, m);
+                                        return (subcb(new Error(m)));
                                 }
 
                                 //Finally build the host struct...
