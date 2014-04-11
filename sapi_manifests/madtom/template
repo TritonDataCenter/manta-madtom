@@ -17,5 +17,18 @@
         },
         "connectTimeout": 1000,
         "rejectUnauthorized": {{MANTA_REJECT_UNAUTHORIZED}}
+    },
+    "__comment__": "These next entries are for generating the host config.",
+    "dns_domain": "{{DNS_DOMAIN}}",
+    "datacenter": "{{DATACENTER}}",
+    "ufds": {
+        "url": "{{UFDS_URL}}",
+        "maxConnections": 1,
+        "bindDN": "{{UFDS_ROOT_DN}}",
+        "bindPassword": "{{UFDS_ROOT_PW}}",
+        "tlsOptions": {
+            "rejectUnauthorized": false
+        },
+        "interval": 10000
     }
 }

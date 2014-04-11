@@ -22,8 +22,8 @@ $DIR/generate_hosts_config.js \
    -d us-east-1:10.0.128.13 \
    -d us-east-2:10.9.0.8 \
    -d us-east-3:10.10.0.8 \
-   -l $DATACENTER \
-   -f $OUT
+   -f $OUT \
+   -c /opt/smartdc/madtom/etc/config.json
 if [[ $? != 0 ]]; then
     echo 'generate_hosts_config.js failed.'
     exit 1;

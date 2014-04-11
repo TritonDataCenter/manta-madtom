@@ -25,8 +25,11 @@ fi
 DIR=$(dirname $0)
 OUT=/opt/smartdc/madtom/etc/checker-hosts.json
 
-$DIR/generate_hosts_config.js -d $DATACENTER:$DNS -l $DATACENTER -f $OUT \
-    -a admin -n manta
+$DIR/generate_hosts_config.js \
+    -d $DATACENTER:$DNS \
+    -f $OUT \
+    -a admin -n manta \
+    -c /opt/smartdc/madtom/etc/config.json
 if [[ $? != 0 ]]; then
     echo 'generate_hosts_config.js failed.'
     exit 1;

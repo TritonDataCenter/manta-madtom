@@ -28,9 +28,9 @@ function usage(msg) {
         }
         var str  = 'usage: ' + path.basename(process.argv[1]);
         str += ' [-a agentNetworkTag]';
+        str += ' [-c configFile]';
         str += ' [-d datacenter:dns_ip]';
         str += ' [-f output_file]';
-        str += ' [-l localDc]';
         str += ' [-n mantaNetworkTag]';
         console.error(str);
         process.exit(1);
@@ -39,14 +39,17 @@ function usage(msg) {
 function parseOptions() {
         var option;
         var opts = {
-                'dc': {}
+                'dcs': {}
         };
-        var parser = new getopt.BasicParser('a:d:f:l:n:',
+        var parser = new getopt.BasicParser('a:c:d:f:n:',
                                             process.argv);
         while ((option = parser.getopt()) !== undefined && !option.error) {
                 switch (option.option) {
                 case 'a':
                         opts.agentNetworkTag = option.optarg;
+                        break;
+                case 'c':
+                        opts.configFile = option.optarg;
                         break;
                 case 'd':
                         var o = option.optarg;
@@ -56,14 +59,11 @@ function parseOptions() {
                         }
                         var dc = parts[0];
                         var dnsIp = parts[1];
-                        opts.dc[dc] = {};
-                        opts.dc[dc]['DNS'] = dnsIp;
+                        opts.dcs[dc] = {};
+                        opts.dcs[dc]['DNS'] = dnsIp;
                         break;
                 case 'f':
                         opts.outputFileName = option.optarg;
-                        break;
-                case 'l':
-                        opts.localDc = option.optarg;
                         break;
                 case 'n':
                         opts.networkTag = option.optarg;
@@ -74,21 +74,46 @@ function parseOptions() {
                 }
         }
 
+        if (!opts.configFile) {
+                usage('-c [config_file] is a required argument');
+        }
+
+        //Load config file and pull what we need out of it...
+        try {
+                var contents = fs.readFileSync(opts.configFile, 'utf-8');
+                var config = JSON.parse(contents);
+        } catch (e) {
+                usage('Error while reading/parsing config file: ' + e.code);
+        }
+
+        if (!config.ufds) {
+                usage('Config file didn\'t contain a ufds block.');
+        }
+        opts.ufdsConfig = config.ufds;
+
+        if (!config.dns_domain) {
+                usage('Config file didn\'t contain a dns_domain.');
+        }
+        opts.dnsDomain = config.dns_domain;
+
+        if (!config.datacenter) {
+                usage('Config file didn\'t contain a datacenter.');
+        }
+        opts.datacenter = config.datacenter;
+
+        // Now look at the other parameters
+
         if (!opts.outputFileName) {
                 usage('-f [output_file] is a required argument');
         }
 
-        if (Object.keys(opts.dc).length === 0) {
+        if (Object.keys(opts.dcs).length === 0) {
                 usage('-d [datacenter:dns_ip] is a required argument.');
         }
 
-        if (!opts.localDc) {
-                usage('-l [local_dc] is a required argument');
-        }
-
-        if (Object.keys(opts.dc).indexOf(opts.localDc) === -1) {
-                usage('local_dc ' + opts.localDc +
-                      ' not found in list of dcs: ' + Object.keys(opts.dc));
+        if (Object.keys(opts.dcs).indexOf(opts.datacenter) === -1) {
+                usage('datacenter ' + opts.datacenter +
+                      ' not found in list of dcs: ' + Object.keys(opts.dcs));
         }
 
         //Servers don't have an ip4addr for the nic tagged with 'manta', so
@@ -169,9 +194,8 @@ function getClients(opts, cb) {
         var self = this;
         var clients = {};
 
-        //TODO: This is obviously wrong for external joyent
         function hn(svc) {
-                return (svc + '.' + opts.dc + '.joyent.us');
+                return (svc + '.' + opts.dc + '.' + opts.dnsDomain);
         }
 
         function url(ip) {
@@ -254,54 +278,31 @@ function getClients(opts, cb) {
                         },
                         function ufds(_, subcb) {
                                 //Only init ufds in the local dc...
-                                if (opts.dc !== self['LOCAL_DC']) {
+                                if (opts.dc !== self['DATACENTER']) {
                                         self.log.debug({
                                                 'client': 'ufds',
                                                 'dc': opts.dc,
-                                                'localDc': self['LOCAL_DC']
+                                                'datacenter': self['datacenter']
                                         }, 'not initing ufds, not in local dc');
                                         subcb();
                                         return;
                                 }
 
-                                var o = {
-                                        'ip': opts.dns,
-                                        'domainName': hn('ufds')
-                                };
-                                lookup.call(self, o, function (err, a) {
-                                        if (err) {
-                                                subcb(err);
-                                                return;
-                                        }
-                                        //TODO: These creds need to come out of
-                                        // here...
-                                        var u = 'ldaps://' + a;
-                                        clients['UFDS'] = new sdc.UFDS({
-                                                url: u,
-                                                bindDN: 'cn=root',
-                                                bindPassword: 'secret',
-                                                cache: {
-                                                        size: 1000,
-                                                        expiry: 300
-                                                }
-                                        });
+                                self.log.debug({
+                                        'ufdsConfig': opts.ufdsConfig
+                                }, 'connecting to ufds');
+
+                                clients['UFDS'] = new sdc.UFDS(opts.ufdsConfig);
+
+                                function oc(err2) {
                                         self.log.debug({
-                                                'client': 'ufds',
-                                                'dns': opts.dns,
-                                                'dc': opts.dc,
-                                                'url': u
-                                        }, 'connecting to ufds');
+                                                'ufdsConfig': opts.ufdsConfig,
+                                                'err': err2
+                                        }, 'ufds onReady');
+                                        subcb(err2);
+                                }
 
-                                        function oc(err2) {
-                                                self.log.debug({
-                                                        'url': u,
-                                                        'err': err2
-                                                }, 'ufds onReady');
-                                                subcb(err2);
-                                        }
-
-                                        clients['UFDS'].on('ready', oc);
-                                });
+                                clients['UFDS'].on('ready', oc);
                         }
                 ]
         }, function (err) {
@@ -312,7 +313,7 @@ function getClients(opts, cb) {
 
 function setupSdcClients(_, cb) {
         var self = this;
-        var dcs = Object.keys(self.DC);
+        var dcs = Object.keys(self.DCS);
         var i = 0;
         function setupNextClient() {
                 var dc = dcs[i];
@@ -322,14 +323,16 @@ function setupSdcClients(_, cb) {
                 }
                 var opts = {
                         'dc': dc,
-                        'dns': self.DC[dc].DNS
+                        'dns': self.DCS[dc].DNS,
+                        'dnsDomain': self.DNS_DOMAIN,
+                        'ufdsConfig': self.UFDS_CONFIG
                 };
                 getClients.call(self, opts, function (err, clients) {
                         if (err) {
                                 cb(err);
                                 return;
                         }
-                        self.DC[dc]['CLIENT'] = clients;
+                        self.DCS[dc]['CLIENT'] = clients;
                         ++i;
                         setupNextClient();
                 });
@@ -341,38 +344,24 @@ function setupSdcClients(_, cb) {
 function findVm(instance, cb) {
         var self = this;
         var uuid = instance.uuid;
-        if (instance.metadata && instance.metadata.DATACENTER) {
-                var dc = instance.metadata.DATACENTER;
-                var vmapi = self.DC[dc].CLIENT.VMAPI;
-                vmapi.getVm({ uuid: uuid }, cb);
-                return;
-        } else {
-                //TODO: Can we remove this section now?
-                var dcs = Object.keys(self.DC);
-                vasync.forEachParallel({
-                        'inputs': dcs.map(function (d) {
-                                return (self.DC[d].CLIENT.VMAPI);
-                        }),
-                        'func': function (client, subcb) {
-                                client.getVm({ uuid: uuid }, subcb);
-                        }
-                }, function (err, results) {
-                        if (results.successes.length < 1) {
-                                cb(new Error('unable to get VM for ' + uuid));
-                                return;
-                        }
-                        cb(null, results.successes[0]);
-                });
+        if (!instance.metadata || !instance.metadata.DATACENTER) {
+                self.log.error({
+                        'instance': instance
+                }, 'instance has no DATACENTER');
+                return (cb(new Error('instance has no DATACENTER: ' + uuid)));
         }
+        var dc = instance.metadata.DATACENTER;
+        var vmapi = self.DCS[dc].CLIENT.VMAPI;
+        return (vmapi.getVm({ uuid: uuid }, cb));
 }
 
 
 function findServer(server, cb) {
         var self = this;
-        var dcs = Object.keys(self.DC);
+        var dcs = Object.keys(self.DCS);
         vasync.forEachParallel({
                 'inputs': dcs.map(function (dc) {
-                        return (self.DC[dc].CLIENT.CNAPI);
+                        return (self.DCS[dc].CLIENT.CNAPI);
                 }),
                 'func': function (client, subcb) {
                         client.getServer(server, subcb);
@@ -393,19 +382,23 @@ function findServer(server, cb) {
 var _self = this;
 _self.log = LOG;
 var _opts = parseOptions();
-_self['DC'] = _opts.dc;
+_self['DCS'] = _opts.dcs;
 _self['OUTPUT_FILENAME'] = _opts.outputFileName;
-_self['LOCAL_DC'] = _opts.localDc;
+_self['DATACENTER'] = _opts.datacenter;
+_self['DNS_DOMAIN'] = _opts.dnsDomain;
 _self['NETWORK_TAG'] = _opts.networkTag;
 _self['AGENT_NETWORK_TAG'] = _opts.agentNetworkTag;
+_self['UFDS_CONFIG'] = _opts.ufdsConfig;
 
 
 _self.log.debug({
-        'dc': _self['DC'],
+        'dcs': _self['DCS'],
         'outputFile': _self['OUTPUT_FILENAME'],
-        'localDc': _self['LOCAL_DC'],
+        'datacenter': _self['DATACENTER'],
+        'dnsDomain': _self['DNS_DOMAIN'],
         'networkTag': _self['NETWORK_TAG'],
-        'agentNetworkTag': _self['AGENT_NETWORK_TAG']
+        'agentNetworkTag': _self['AGENT_NETWORK_TAG'],
+        'ufdsConfig': _self['UFDS_CONFIG']
 });
 
 vasync.pipeline({
@@ -413,9 +406,9 @@ vasync.pipeline({
                 setupSdcClients.bind(_self),
                 function lookupPoseidon(_, subcb) {
                         _self.log.debug({
-                                'localDc': _self['LOCAL_DC']
+                                'datacenter': _self['DATACENTER']
                         }, 'connecting to ufds in dc');
-                        var ufds = _self.DC[_self['LOCAL_DC']].CLIENT.UFDS;
+                        var ufds = _self.DCS[_self['DATACENTER']].CLIENT.UFDS;
                         ufds.getUser('poseidon', function (err, user) {
                                 if (err) {
                                         subcb(err);
@@ -430,9 +423,9 @@ vasync.pipeline({
                 },
                 function lookupMantaApplication(_, subcb) {
                         _self.log.debug({
-                                'localDc': _self['LOCAL_DC']
+                                'datacenter': _self['DATACENTER']
                         }, 'connecting to sapi in dc to get manta application');
-                        var sapi = _self.DC[_self['LOCAL_DC']].CLIENT.SAPI;
+                        var sapi = _self.DCS[_self['DATACENTER']].CLIENT.SAPI;
                         var search = {
                                 'name': 'manta',
                                 'owner_uuid':  _self['POSEIDON'].uuid,
@@ -457,9 +450,9 @@ vasync.pipeline({
                 },
                 function lookupInstances(_, subcb) {
                         _self.log.debug({
-                                'localDc': _self['LOCAL_DC']
+                                'datacenter': _self['DATACENTER']
                         }, 'connecting to sapi in dc to lookup instances');
-                        var sapi = _self.DC[_self['LOCAL_DC']].CLIENT.SAPI;
+                        var sapi = _self.DCS[_self['DATACENTER']].CLIENT.SAPI;
 
                         function onr(err, objs) {
                                 if (err) {
