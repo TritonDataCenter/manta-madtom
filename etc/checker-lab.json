@@ -94,6 +94,12 @@
       ]
     },
     {
+      "hostType": "marlin-dashboard",
+      "processes": [
+        { "processType": "marlin-dashboard", "port": 80 }
+      ]
+    },
+    {
       "hostType": "workflow",
       "processes": [
         { "processType": "workflow", "port": 80 }
@@ -137,6 +143,12 @@
       "processType": "manowar",
       "checkerType": "http",
       "path": "/ping",
+      "secure": false
+    },
+    {
+      "processType": "marlin-dashboard",
+      "checkerType": "http",
+      "path": "/index.htm",
       "secure": false
     },
     {
