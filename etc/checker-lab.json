@@ -53,7 +53,8 @@
     {
       "hostType": "storage",
       "processes": [
-        { "processType": "mako", "port": 80 }
+        { "processType": "mako", "port": 80 },
+        { "processType": "minnow", "port": 3030 }
       ]
     },
     {
@@ -138,6 +139,12 @@
       "checkerType": "http",
       "path": "/50x.html",
       "secure": false
+    },
+    {
+       "processType": "minnow",
+       "checkerType": "http",
+       "path": "/ping",
+       "secure": false
     },
     {
       "processType": "manowar",
