@@ -24,7 +24,7 @@ function manta_setup_madtom_user {
     cp -r /root/.ssh /home/madtom/.
     chown -R madtom /home/madtom/.ssh
     cat /opt/smartdc/common/etc/config.json | \
-        json -e "manta.sign.key='/home/madtom/.ssh/id_rsa'" \
+        json -e "this.manta.sign.key='/home/madtom/.ssh/id_rsa'" \
         >/home/madtom/manta.config.json
 }
 
