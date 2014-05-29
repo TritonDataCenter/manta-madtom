@@ -1,1 +1,0 @@
-generate_hosts_config_coal.sh

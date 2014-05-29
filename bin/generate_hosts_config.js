@@ -29,7 +29,6 @@ function usage(msg) {
         var str  = 'usage: ' + path.basename(process.argv[1]);
         str += ' [-a agentNetworkTag]';
         str += ' [-c configFile]';
-        str += ' [-d datacenter:dns_ip]';
         str += ' [-f output_file]';
         str += ' [-n mantaNetworkTag]';
         console.error(str);
@@ -41,7 +40,7 @@ function parseOptions() {
         var opts = {
                 'dcs': {}
         };
-        var parser = new getopt.BasicParser('a:c:d:f:n:',
+        var parser = new getopt.BasicParser('a:c:f:n:',
                                             process.argv);
         while ((option = parser.getopt()) !== undefined && !option.error) {
                 switch (option.option) {
@@ -50,17 +49,6 @@ function parseOptions() {
                         break;
                 case 'c':
                         opts.configFile = option.optarg;
-                        break;
-                case 'd':
-                        var o = option.optarg;
-                        var parts = o.split(':');
-                        if (o.indexOf(':') === -1 || parts.length !== 2) {
-                                usage('Invalid datacenter:dns_ip pair: ' + o);
-                        }
-                        var dc = parts[0];
-                        var dnsIp = parts[1];
-                        opts.dcs[dc] = {};
-                        opts.dcs[dc]['DNS'] = dnsIp;
                         break;
                 case 'f':
                         opts.outputFileName = option.optarg;
@@ -74,9 +62,15 @@ function parseOptions() {
                 }
         }
 
-        if (!opts.configFile) {
-                usage('-c [config_file] is a required argument');
-        }
+        // Now set some defaults.
+        opts.outputFileName = opts.outputFileName ||
+                '/opt/smartdc/madtom/etc/checker-hosts.json';
+        //Servers don't have an ip4addr for the nic tagged with 'manta', so
+        // we default 'admin' here.
+        opts.agentNetworkTag = opts.agentNetworkTag || 'admin';
+        opts.networkTag = opts.networkTag || 'manta';
+        opts.configFile = opts.configFile ||
+                '/opt/smartdc/madtom/etc/config.json';
 
         //Load config file and pull what we need out of it...
         try {
@@ -101,208 +95,50 @@ function parseOptions() {
         }
         opts.datacenter = config.datacenter;
 
-        // Now look at the other parameters
-
-        if (!opts.outputFileName) {
-                usage('-f [output_file] is a required argument');
+        if (!config.region) {
+                usage('Config file didn\'t contain a region.');
         }
-
-        if (Object.keys(opts.dcs).length === 0) {
-                usage('-d [datacenter:dns_ip] is a required argument.');
-        }
-
-        if (Object.keys(opts.dcs).indexOf(opts.datacenter) === -1) {
-                usage('datacenter ' + opts.datacenter +
-                      ' not found in list of dcs: ' + Object.keys(opts.dcs));
-        }
-
-        //Servers don't have an ip4addr for the nic tagged with 'manta', so
-        // we default 'admin' here.
-        opts.agentNetworkTag = opts.agentNetworkTag || 'admin';
-        opts.networkTag = opts.networkTag || 'manta';
+        opts.region = config.region;
 
         return (opts);
 }
 
 
-function lookup(opts, cb) {
-        assert.string(opts.domainName, 'opts.domainName');
-        assert.string(opts.ip, 'opts.ip');
-        assert.optionalNumber(opts.port, 'opts.port');
-
-        var self = this;
-
-        var host = opts.ip;
-        var port = opts.port || 53;
-        var domainName = opts.domainName;
-
-        self.log.debug({
-                'host': host,
-                'port': port,
-                'domainName': domainName
-        }, 'dns lookup');
-
-        var question = dns.Question({
-                name: domainName,
-                type: 'A'
-        });
-
-        var req = dns.Request({
-                question: question,
-                server: { address: host, port: port, type: 'udp' },
-                timeout: 1000,
-                cache: false
-        });
-
-        var error;
-        var answers = [];
-        req.on('timeout', function () {
-                error = new Error('timed out');
-        });
-
-        req.on('message', function (err, answer) {
-                if (err) {
-                        error = err;
-                        return;
-                }
-                answer.answer.forEach(function (a) {
-                        answers.push(a.address);
-                });
-        });
-
-        req.on('end', function () {
-                if (error) {
-                        cb(error);
-                        return;
-                }
-                self.log.debug({
-                        'host': host,
-                        'port': port,
-                        'domainName': domainName,
-                        'answer': answers[0]
-                }, 'dns lookup complete');
-
-                //We could randomly return an answer...
-                cb(null, answers[0]);
-        });
-
-        req.send();
-}
-
-
-function getClients(opts, cb) {
+function getDcClients(opts, cb) {
         var self = this;
         var clients = {};
 
-        function hn(svc) {
-                return (svc + '.' + opts.dc + '.' + opts.dnsDomain);
-        }
-
-        function url(ip) {
-                return ('http://' + ip);
+        function url(svc) {
+                return ('http://' + svc + '.' + opts.dc + '.' + opts.dnsDomain);
         }
 
         vasync.pipeline({
                 'funcs': [
-                        function sapi(_, subcb) {
-                                var o = {
-                                        'ip': opts.dns,
-                                        'domainName': hn('sapi')
-                                };
-                                lookup.call(self, o, function (err, a) {
-                                        if (err) {
-                                                subcb(err);
-                                                return;
-                                        }
-                                        clients['SAPI'] = new sdc.SAPI({
-                                                log: self.log,
-                                                url: url(a),
-                                                agent: false
-                                        });
-                                        self.log.debug({
-                                                'client': 'sapi',
-                                                'dns': opts.dns,
-                                                'dc': opts.dc,
-                                                'url': url(a)
-                                        });
-                                        subcb();
-                                });
-                        },
                         function cnapi(_, subcb) {
-                                var o = {
-                                        'ip': opts.dns,
-                                        'domainName': hn('cnapi')
-                                };
-                                lookup.call(self, o, function (err, a) {
-                                        if (err) {
-                                                subcb(err);
-                                                return;
-                                        }
-                                        clients['CNAPI'] = new sdc.CNAPI({
-                                                log: self.log,
-                                                url: url(a),
-                                                agent: false
-                                        });
-                                        self.log.debug({
-                                                'client': 'cnapi',
-                                                'dns': opts.dns,
-                                                'dc': opts.dc,
-                                                'url': url(a)
-                                        });
-                                        subcb();
+                                self.log.debug({
+                                        'client': 'cnapi',
+                                        'dc': opts.dc,
+                                        'url': url('cnapi')
                                 });
+                                clients['CNAPI'] = new sdc.CNAPI({
+                                        log: self.log,
+                                        url: url('cnapi'),
+                                        agent: false
+                                });
+                                subcb();
                         },
                         function vmapi(_, subcb) {
-                                var o = {
-                                        'ip': opts.dns,
-                                        'domainName': hn('vmapi')
-                                };
-                                lookup.call(self, o, function (err, a) {
-                                        if (err) {
-                                                subcb(err);
-                                                return;
-                                        }
-                                        clients['VMAPI'] = new sdc.VMAPI({
-                                                log: self.log,
-                                                url: url(a),
-                                                agent: false
-                                        });
-                                        self.log.debug({
-                                                'client': 'vmapi',
-                                                'dns': opts.dns,
-                                                'dc': opts.dc,
-                                                'url': url(a)
-                                        });
-                                        subcb();
-                                });
-                        },
-                        function ufds(_, subcb) {
-                                //Only init ufds in the local dc...
-                                if (opts.dc !== self['DATACENTER']) {
-                                        self.log.debug({
-                                                'client': 'ufds',
-                                                'dc': opts.dc,
-                                                'datacenter': self['datacenter']
-                                        }, 'not initing ufds, not in local dc');
-                                        subcb();
-                                        return;
-                                }
-
                                 self.log.debug({
-                                        'ufdsConfig': opts.ufdsConfig
-                                }, 'connecting to ufds');
-
-                                clients['UFDS'] = new sdc.UFDS(opts.ufdsConfig);
-
-                                function oc(err2) {
-                                        self.log.debug({
-                                                'ufdsConfig': opts.ufdsConfig,
-                                                'err': err2
-                                        }, 'ufds onReady');
-                                        subcb(err2);
-                                }
-
-                                clients['UFDS'].on('ready', oc);
+                                        'client': 'vmapi',
+                                        'dc': opts.dc,
+                                        'url': url('vmapi')
+                                });
+                                clients['VMAPI'] = new sdc.VMAPI({
+                                        log: self.log,
+                                        url: url('vmapi'),
+                                        agent: false
+                                });
+                                subcb();
                         }
                 ]
         }, function (err) {
@@ -311,23 +147,88 @@ function getClients(opts, cb) {
 }
 
 
-function setupSdcClients(_, cb) {
+function setupSingleDcClients(_, cb) {
+        var self = this;
+        vasync.pipeline({
+                'funcs': [
+                        function ufds(_2, subcb) {
+                                self.log.debug({
+                                        'ufdsConfig': self.UFDS_CONFIG
+                                }, 'connecting to ufds');
+
+                                self['UFDS'] = new sdc.UFDS(self.UFDS_CONFIG);
+
+                                self['UFDS'].on('ready', function (err) {
+                                        self.log.debug({
+                                                'ufdsConfig': self.UFDS_CONFIG,
+                                                'err': err
+                                        }, 'ufds onReady');
+                                        return (subcb(err));
+                                });
+                        },
+                        function sapi(_2, subcb) {
+                                var url = 'http://sapi.' + self.DATACENTER +
+                                        '.' + self.DNS_DOMAIN;
+                                self.log.debug({
+                                        'client': 'sapi',
+                                        'url': url
+                                });
+                                self['SAPI'] = new sdc.SAPI({
+                                        log: self.log,
+                                        url: url,
+                                        agent: false
+                                });
+                                subcb();
+                        }
+                ]
+        }, function (err) {
+                cb(err);
+        });
+}
+
+
+function getDcs(_, cb) {
+        var self = this;
+        var ufds = self['UFDS'];
+        ufds.listDatacenters(self.REGION, function (err, res) {
+                if (err) {
+                        return (cb(err));
+                }
+                if (res.length === 0) {
+                        self.log.info({
+                                res: res,
+                                region: self.REGION
+                        }, 'ufds listDatacenters result');
+                        return (cb(new Error('no datacenters found')));
+                }
+                var dcs = {};
+                res.forEach(function (datacenter) {
+                        //Take the first sdc resolver we come across.
+                        if (dcs[datacenter.datacenter] === undefined) {
+                                dcs[datacenter.datacenter] = {};
+                        }
+                });
+                self['DCS'] = dcs;
+                return (cb());
+        });
+}
+
+
+function setupXDcClients(_, cb) {
         var self = this;
         var dcs = Object.keys(self.DCS);
         var i = 0;
+
         function setupNextClient() {
                 var dc = dcs[i];
                 if (dc === undefined) {
-                        cb();
-                        return;
+                        return (cb());
                 }
                 var opts = {
                         'dc': dc,
-                        'dns': self.DCS[dc].DNS,
-                        'dnsDomain': self.DNS_DOMAIN,
-                        'ufdsConfig': self.UFDS_CONFIG
+                        'dnsDomain': self.DNS_DOMAIN
                 };
-                getClients.call(self, opts, function (err, clients) {
+                getDcClients.call(self, opts, function (err, clients) {
                         if (err) {
                                 cb(err);
                                 return;
@@ -382,8 +283,8 @@ function findServer(server, cb) {
 var _self = this;
 _self.log = LOG;
 var _opts = parseOptions();
-_self['DCS'] = _opts.dcs;
 _self['OUTPUT_FILENAME'] = _opts.outputFileName;
+_self['REGION'] = _opts.region;
 _self['DATACENTER'] = _opts.datacenter;
 _self['DNS_DOMAIN'] = _opts.dnsDomain;
 _self['NETWORK_TAG'] = _opts.networkTag;
@@ -392,8 +293,8 @@ _self['UFDS_CONFIG'] = _opts.ufdsConfig;
 
 
 _self.log.debug({
-        'dcs': _self['DCS'],
         'outputFile': _self['OUTPUT_FILENAME'],
+        'region': _self['REGION'],
         'datacenter': _self['DATACENTER'],
         'dnsDomain': _self['DNS_DOMAIN'],
         'networkTag': _self['NETWORK_TAG'],
@@ -403,12 +304,14 @@ _self.log.debug({
 
 vasync.pipeline({
         'funcs': [
-                setupSdcClients.bind(_self),
+                setupSingleDcClients.bind(_self),
+                getDcs.bind(_self),
+                setupXDcClients.bind(_self),
                 function lookupPoseidon(_, subcb) {
                         _self.log.debug({
                                 'datacenter': _self['DATACENTER']
                         }, 'connecting to ufds in dc');
-                        var ufds = _self.DCS[_self['DATACENTER']].CLIENT.UFDS;
+                        var ufds = _self.UFDS;
                         ufds.getUser('poseidon', function (err, user) {
                                 if (err) {
                                         subcb(err);
@@ -425,7 +328,7 @@ vasync.pipeline({
                         _self.log.debug({
                                 'datacenter': _self['DATACENTER']
                         }, 'connecting to sapi in dc to get manta application');
-                        var sapi = _self.DCS[_self['DATACENTER']].CLIENT.SAPI;
+                        var sapi = _self.SAPI;
                         var search = {
                                 'name': 'manta',
                                 'owner_uuid':  _self['POSEIDON'].uuid,
@@ -452,8 +355,7 @@ vasync.pipeline({
                         _self.log.debug({
                                 'datacenter': _self['DATACENTER']
                         }, 'connecting to sapi in dc to lookup instances');
-                        var sapi = _self.DCS[_self['DATACENTER']].CLIENT.SAPI;
-
+                        var sapi = _self.SAPI;
                         function onr(err, objs) {
                                 if (err) {
                                         subcb(err);

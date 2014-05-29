@@ -20,6 +20,7 @@
     },
     "__comment__": "These next entries are for generating the host config.",
     "dns_domain": "{{DNS_DOMAIN}}",
+    "region": "{{REGION}}",
     "datacenter": "{{DATACENTER}}",
     "ufds": {
         "url": "{{UFDS_URL}}",

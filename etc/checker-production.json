@@ -212,14 +212,14 @@
       "secure": false
     },
     {
+      "processType": "workflow",
+      "checkerType": "tcp"
+    },
+    {
       "processType": "wrasse",
       "checkerType": "http",
       "path": "/ping",
       "secure": false
-    },
-    {
-      "processType": "workflow",
-      "checkerType": "tcp"
     },
     {
       "processType": "zookeeper",

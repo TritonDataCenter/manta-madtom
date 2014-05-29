@@ -53,7 +53,7 @@ function manta_setup_madtom {
         exit 1;
     fi
 
-    /opt/smartdc/madtom/bin/generate_hosts_config_$SIZE.sh
+    /opt/smartdc/madtom/bin/generate_hosts_config.js
     if [[ $? != 0 ]]; then
         echo "Unable to generate /opt/smartdc/madtom/etc/checker-hosts.json."
         exit 1;

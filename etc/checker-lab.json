@@ -141,10 +141,10 @@
       "secure": false
     },
     {
-       "processType": "minnow",
-       "checkerType": "http",
-       "path": "/ping",
-       "secure": false
+      "processType": "minnow",
+      "checkerType": "http",
+      "path": "/ping",
+      "secure": false
     },
     {
       "processType": "manowar",
