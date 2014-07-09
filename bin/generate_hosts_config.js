@@ -4,7 +4,6 @@
 
 var assert = require('assert-plus');
 var bunyan = require('bunyan');
-var dns = require('native-dns');
 var fs = require('fs');
 var getopt = require('posix-getopt');
 var path = require('path');
@@ -253,7 +252,14 @@ function findVm(instance, cb) {
         }
         var dc = instance.metadata.DATACENTER;
         var vmapi = self.DCS[dc].CLIENT.VMAPI;
-        return (vmapi.getVm({ uuid: uuid }, cb));
+        return (vmapi.getVm({ uuid: uuid }, function (err, vm) {
+                if (err && err.message === 'socket hang up') {
+                        self.log.info({ uuid: uuid, dc: dc },
+                                      'socket hangup, trying again');
+                        return (findVm.call(self, instance, cb));
+                }
+                return (cb(err, vm));
+        }));
 }
 
 

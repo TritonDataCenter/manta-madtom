@@ -9,12 +9,11 @@
                 "bunyan": "0.16.6",
                 "checker": "git://github.com/nfitch/node-checker#master",
                 "moray": "git+ssh://git@git.joyent.com:node-moray.git#master",
-                "native-dns": "0.4.1",
-		"posix-getopt": "1.0.0",
+                "posix-getopt": "1.0.0",
                 "pg": "0.11.3",
                 "redis": "0.8.3",
                 "sdc-clients": "git+ssh://git@git.joyent.com:node-sdc-clients.git#master",
-                "vasync": "1.3.3"
+                "vasync": "1.5.0"
         },
         "devDependencies": {
                 "nodeunit": "0.7.4"
