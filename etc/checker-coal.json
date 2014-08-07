@@ -17,6 +17,8 @@
     {
       "hostType": "authcache",
       "processes": [
+        { "processType": "mahi-ser", "port": 80 },
+        { "processType": "mahi-rep", "port": 8080 },
         { "processType": "redis", "port": 6379 }
       ]
     },
@@ -173,6 +175,18 @@
       "processType": "postgres",
       "checkerType": "postgres",
       "username": "postgres"
+    },
+    {
+      "processType": "mahi-ser",
+      "checkerType": "http",
+      "path": "/ping",
+      "secure": false
+    },
+    {
+      "processType": "mahi-rep",
+      "checkerType": "http",
+      "path": "/ping",
+      "secure": false
     },
     {
       "processType": "redis",
