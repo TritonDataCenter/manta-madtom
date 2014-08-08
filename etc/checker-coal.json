@@ -84,7 +84,6 @@
     {
       "hostType": "ops",
       "processes": [
-        { "processType": "manowar", "port": 80 }
       ]
     },
     {
@@ -135,12 +134,6 @@
     },
     {
       "processType": "minnow",
-      "checkerType": "http",
-      "path": "/ping",
-      "secure": false
-    },
-    {
-      "processType": "manowar",
       "checkerType": "http",
       "path": "/ping",
       "secure": false
