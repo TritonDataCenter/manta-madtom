@@ -93,6 +93,12 @@
       ]
     },
     {
+      "hostType": "propeller",
+      "processes": [
+        { "processType": "propeller", "port": 80 }
+      ]
+    },
+    {
       "hostType": "workflow",
       "processes": [
         { "processType": "workflow", "port": 80 }
@@ -142,6 +148,12 @@
       "processType": "marlin-dashboard",
       "checkerType": "http",
       "path": "/index.htm",
+      "secure": false
+    },
+    {
+      "processType": "propeller",
+      "checkerType": "http",
+      "path": "/ping",
       "secure": false
     },
     {
