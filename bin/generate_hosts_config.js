@@ -84,10 +84,10 @@ function parseOptions() {
         }
         opts.ufdsConfig = config.ufds;
 
-        if (!config.dns_domain) {
-                usage('Config file didn\'t contain a dns_domain.');
+        if (!config.dnsDomain) {
+                usage('Config file didn\'t contain a dnsDomain.');
         }
-        opts.dnsDomain = config.dns_domain;
+        opts.dnsDomain = config.dnsDomain;
 
         if (!config.datacenter) {
                 usage('Config file didn\'t contain a datacenter.');
