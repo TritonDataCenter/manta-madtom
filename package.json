@@ -9,7 +9,7 @@
                 "assert-plus": "0.1.1",
                 "bunyan": "0.16.6",
                 "checker": "git://github.com/nfitch/node-checker#master",
-                "moray": "git+ssh://git@git.joyent.com:node-moray.git#master",
+                "moray": "git+ssh://git@github.com:joyent/node-moray.git#master",
                 "posix-getopt": "1.0.0",
                 "pg": "0.11.3",
                 "redis": "0.8.3",
