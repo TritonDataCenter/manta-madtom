@@ -72,9 +72,7 @@ function parseOptions() {
         // Now set some defaults.
         opts.outputFileName = opts.outputFileName ||
                 '/opt/smartdc/madtom/etc/checker-hosts.json';
-        //Servers don't have an ip4addr for the nic tagged with 'manta', so
-        // we default 'admin' here.
-        opts.agentNetworkTag = opts.agentNetworkTag || 'admin';
+        opts.agentNetworkTag = opts.agentNetworkTag || 'manta';
         opts.networkTag = opts.networkTag || 'manta';
         opts.configFile = opts.configFile ||
                 '/opt/smartdc/madtom/etc/config.json';
@@ -288,6 +286,40 @@ function findServer(server, cb) {
                 }
                 cb(null, results.successes[0]);
         });
+}
+
+
+function findServerIp(network, server) {
+        var ip = null;
+        var taggedNic = null;
+        var nics = server.sysinfo['Network Interfaces'];
+        var nns = Object.keys(nics);
+        for (var i = 0; i < nns.length; ++i) {
+                var nn = nns[i];
+                var nic = nics[nn];
+                if (nic['NIC Names'].indexOf(network) !== -1) {
+                        ip = nic['ip4addr'];
+                        taggedNic = nn;
+                        break;
+                }
+        }
+
+        // If the physical nic doesn't have an ip address, it's probably
+        // on a vnic
+        if (taggedNic !== null && ip === '') {
+                var vnics = server.sysinfo['Virtual Network Interfaces'];
+                var labs = Object.keys(vnics);
+                for (i = 0; i < labs.length; ++i) {
+                        var vnic = vnics[labs[i]];
+                        if (vnic['Host Interface'] === taggedNic &&
+                            labs[i].indexOf(network) === 0) {
+                                ip = vnic.ip4addr;
+                                break;
+                        }
+                }
+        }
+
+        return (ip === null || ip === '' ? null : ip);
 }
 
 
@@ -526,20 +558,9 @@ vasync.pipeline({
                         for (i = 0; i < agents.length; ++i) {
                                 server_uuid = agents[i];
                                 sv = _self['CNAPI_SERVERS'][server_uuid];
-                                ip = null;
+                                ip = findServerIp(_self['AGENT_NETWORK_TAG'],
+                                                  sv);
                                 hdc = sv.sysinfo['Datacenter Name'];
-                                nics = sv.sysinfo['Network Interfaces'];
-                                var nns = Object.keys(nics);
-                                for (j = 0; j < nns.length; ++j) {
-                                        var nn = nns[j];
-                                        nic = nics[nn];
-                                        nt = _self['AGENT_NETWORK_TAG'];
-                                        if (nic['NIC Names'].indexOf(nt) !==
-                                            -1) {
-                                                ip = nic['ip4addr'];
-                                                break;
-                                        }
-                                }
                                 _self['HOSTS'].push({
                                         'hostType': 'agent',
                                         'ip': ip,
