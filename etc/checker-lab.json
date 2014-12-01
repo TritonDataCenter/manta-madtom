@@ -48,6 +48,7 @@
     {
       "hostType": "postgres",
       "processes": [
+        { "processType": "manatee", "port": 5433 },
         { "processType": "postgres", "port": 5432 },
         { "processType": "pg-backup", "port": 12345 }
       ]
@@ -162,7 +163,7 @@
     {
       "processType": "propeller",
       "checkerType": "http",
-      "path": "ping",
+      "path": "/ping",
       "secure": false
     },
     {
@@ -184,6 +185,12 @@
     {
       "processType": "pg-backup",
       "checkerType": "tcp"
+    },
+    {
+      "processType": "manatee",
+      "checkerType": "http",
+      "path": "/ping",
+      "secure": false
     },
     {
       "processType": "postgres",
