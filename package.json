@@ -8,12 +8,12 @@
         "dependencies": {
                 "assert-plus": "0.1.1",
                 "bunyan": "0.16.6",
-                "checker": "git://github.com/nfitch/node-checker#master",
-                "moray": "git+ssh://git@github.com:joyent/node-moray.git#master",
+                "checker": "git://github.com/joyent/node-checker#master",
+                "moray": "git://github.com/joyent/node-moray.git#master",
                 "posix-getopt": "1.0.0",
                 "pg": "0.11.3",
                 "redis": "0.8.3",
-                "sdc-clients": "git+ssh://git@github.com:joyent/node-sdc-clients.git#master",
+                "sdc-clients": "git://github.com/joyent/node-sdc-clients.git#master",
                 "vasync": "1.5.0"
         },
         "devDependencies": {
