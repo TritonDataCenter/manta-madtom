@@ -208,7 +208,8 @@
       "processType": "stud",
       "checkerType": "http",
       "path": "/ping",
-      "secure": true
+      "secure": true,
+      "rejectUnauthorized": false
     },
     {
       "processType": "supervisor",
