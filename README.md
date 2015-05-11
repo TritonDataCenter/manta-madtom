@@ -58,6 +58,11 @@ here is coal's GZ):
     $ ./bin/generate_hosts_config.js -d $sdc_datacenter:$sdc_dns \
        -l $sdc_datacenter -f /var/tmp/madtom-hosts.json -n admin | bunyan
 
+You'll also want to copy one of the configuration templates in the
+"sapi\_manifests" directory to a new file and fill in any required properties.
+For example, you might copy ./sapi\_manifests/madtom\_coal/template to
+etc/checker-coal.json.
+
 Then fire up the madtom server (which is a very thin shim over the node-checker
 server):
 

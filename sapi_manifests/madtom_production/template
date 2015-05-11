@@ -229,7 +229,8 @@
       "processType": "stud",
       "checkerType": "http",
       "path": "/ping",
-      "secure": true
+      "secure": true,
+      "rejectUnauthorized": {{MANTA_REJECT_UNAUTHORIZED}}
     },
     {
       "processType": "supervisor",

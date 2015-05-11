@@ -1,0 +1,5 @@
+{
+	"name": "madtom_production",
+	"path": "/opt/smartdc/madtom/etc/checker-production.json",
+	"master": true
+}

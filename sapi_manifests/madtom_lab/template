@@ -11,7 +11,10 @@
       "hostType": "webapi",
       "processes": [
         { "processType": "haproxy", "port": 80 },
-        { "processType": "muskie", "port": 8081 }
+        { "processType": "muskie", "port": 8081 },
+        { "processType": "muskie", "port": 8082 },
+        { "processType": "muskie", "port": 8083 },
+        { "processType": "muskie", "port": 8084 }
       ]
     },
     {
@@ -26,14 +29,20 @@
       "hostType": "electric-moray",
       "processes": [
         { "processType": "haproxy-tcp", "port": 2020 },
-        { "processType": "electric-moray", "port": 2021 }
+        { "processType": "electric-moray", "port": 2021 },
+        { "processType": "electric-moray", "port": 2022 },
+        { "processType": "electric-moray", "port": 2023 },
+        { "processType": "electric-moray", "port": 2024 }
       ]
     },
     {
       "hostType": "moray",
       "processes": [
         { "processType": "haproxy-tcp", "port": 2020 },
-        { "processType": "moray", "port": 2021 }
+        { "processType": "moray", "port": 2021 },
+        { "processType": "moray", "port": 2022 },
+        { "processType": "moray", "port": 2023 },
+        { "processType": "moray", "port": 2024 }
       ]
     },
     {
@@ -209,7 +218,7 @@
       "checkerType": "http",
       "path": "/ping",
       "secure": true,
-      "rejectUnauthorized": false
+      "rejectUnauthorized": {{MANTA_REJECT_UNAUTHORIZED}}
     },
     {
       "processType": "supervisor",

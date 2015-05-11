@@ -33,7 +33,6 @@ NPM             := npm
 #
 DOC_FILES        = $(shell find docs -name '*.md' | cut -d '/' -f 2)
 JS_FILES        := $(shell ls *.js) $(shell find lib test bin -name '*.js')
-JSON_FILES      := $(wildcard etc/*.json)
 JSL_CONF_NODE    = tools/jsl.node.conf
 JSL_FILES_NODE   = $(JS_FILES)
 JSSTYLE_FILES    = $(JS_FILES)
@@ -104,7 +103,6 @@ release: all docs $(SMF_MANIFESTS)
 	cp -r   $(ROOT)/bin \
 		$(ROOT)/boot \
 		$(ROOT)/build \
-		$(ROOT)/etc \
 		$(ROOT)/lib \
 		$(ROOT)/node_modules \
 		$(ROOT)/package.json \
