@@ -5,7 +5,7 @@
 #
 
 #
-# Copyright (c) 2015, Joyent, Inc.
+# Copyright (c) 2017, Joyent, Inc.
 #
 
 #
@@ -84,7 +84,7 @@ CLEAN_FILES += $(NODEUNIT) ./node_modules/nodeunit
 .PHONY: test
 test: $(NODEUNIT)
 	mkdir -p ./tmp
-	find test/ -name '*.test.js' | xargs -n 1 $(NODEUNIT)
+	find test/ -name '*.test.js' | xargs -t -L1 ctrun -o noorphan node
 
 .PHONY: scripts
 scripts: deps/manta-scripts/.git

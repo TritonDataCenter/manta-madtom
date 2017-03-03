@@ -7,7 +7,7 @@
  */
 
 /*
- * Copyright (c) 2014, Joyent, Inc.
+ * Copyright (c) 2017, Joyent, Inc.
  */
 
 var assert = require('assert-plus');
@@ -24,8 +24,6 @@ var LOG = bunyan.createLogger({
         'stream': process.stdout,
         'serializers': bunyan.stdSerializers
 });
-
-
 
 //--- Helpers
 
@@ -535,13 +533,13 @@ vasync.pipeline({
                                         }
                                 }
 
+                                //Leave hosts with no IP out of the config
                                 if (!ip) {
-                                        var m = 'vm doesnt have nics';
                                         _self.log.error({
                                                 'uuid': uuid,
                                                 'vm': vm
-                                        }, m);
-                                        return (subcb(new Error(m)));
+                                        }, 'vm doesnt have nics');
+                                        continue;
                                 }
 
                                 //Finally build the host struct...
@@ -561,6 +559,12 @@ vasync.pipeline({
                                 ip = findServerIp(_self['AGENT_NETWORK_TAG'],
                                                   sv);
                                 hdc = sv.sysinfo['Datacenter Name'];
+                                if (!ip) {
+                                        _self.log.error({
+                                                'uuid': uuid
+                                        }, 'agent doesnt have nics');
+                                        continue;
+                                }
                                 _self['HOSTS'].push({
                                         'hostType': 'agent',
                                         'ip': ip,
