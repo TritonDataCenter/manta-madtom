@@ -73,7 +73,7 @@ NPM_ENV		 = MAKE_OVERRIDES="CTFCONVERT=/bin/true CTFMERGE=/bin/true"
 # Repo-specific targets
 #
 .PHONY: all
-all: $(SMF_MANIFESTS) | $(REPO_DEPS) scripts
+all: $(SMF_MANIFESTS) | $(NPM_EXEC) $(REPO_DEPS) scripts
 	$(NPM) install
 
 CLEAN_FILES += $(NODEUNIT) ./node_modules/nodeunit
