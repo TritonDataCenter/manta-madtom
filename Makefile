@@ -5,7 +5,7 @@
 #
 
 #
-# Copyright (c) 2017, Joyent, Inc.
+# Copyright (c) 2018, Joyent, Inc.
 #
 
 #
@@ -25,7 +25,6 @@
 #
 # Tools
 #
-NODEUNIT        := ./node_modules/.bin/nodeunit
 NPM             := npm
 
 #
@@ -74,17 +73,15 @@ NPM_ENV		 = MAKE_OVERRIDES="CTFCONVERT=/bin/true CTFMERGE=/bin/true"
 # Repo-specific targets
 #
 .PHONY: all
-all: $(SMF_MANIFESTS) | $(NODEUNIT) $(REPO_DEPS) scripts
-	$(NPM) install
-$(NODEUNIT): | $(NPM_EXEC)
+all: $(SMF_MANIFESTS) | $(REPO_DEPS) scripts
 	$(NPM) install
 
 CLEAN_FILES += $(NODEUNIT) ./node_modules/nodeunit
 
 .PHONY: test
-test: $(NODEUNIT)
+test:
 	mkdir -p ./tmp
-	find test/ -name '*.test.js' | xargs -t -L1 ctrun -o noorphan node
+	find test/ -name '*.test.js' | xargs -t -L1 ctrun -o noorphan $(NODE_EXEC)
 
 .PHONY: scripts
 scripts: deps/manta-scripts/.git

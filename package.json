@@ -16,8 +16,9 @@
                 "sdc-clients": "~9.1",
                 "vasync": "1.5.0"
         },
+        "//": "One of our modules has a '*' dependency on 'debug' that uses syntax incompatible with our prebuilt node version. Force it to an older version.",
         "devDependencies": {
-                "nodeunit": "0.7.4"
+                "debug": "3.1.0"
         },
         "engines": {
                 "node": "0.8.18"
