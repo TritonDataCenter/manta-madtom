@@ -1,7 +1,7 @@
 {
         "name": "madtom",
         "description": "Manta Status Dashboard.",
-        "version": "1.0.0",
+        "version": "1.0.1",
         "author": "Joyent (joyent.com)",
         "license": "MPL-2.0",
         "private": true,
@@ -13,7 +13,8 @@
                 "posix-getopt": "1.0.0",
                 "pg": "0.11.3",
                 "redis": "0.8.3",
-                "sdc-clients": "~9.1",
+                "sdc-clients": "12.0.0",
+                "ufds": "1.5.0",
                 "vasync": "1.5.0"
         },
         "//": "One of our modules has a '*' dependency on 'debug' that uses syntax incompatible with our prebuilt node version. Force it to an older version.",
