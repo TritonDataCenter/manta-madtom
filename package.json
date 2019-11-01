@@ -11,7 +11,7 @@
                 "checker": "git://github.com/joyent/node-checker#master",
                 "moray": "git://github.com/joyent/node-moray.git#fd5781bc25a9bfe2ba82167664639753fb9f0ca5",
                 "posix-getopt": "1.0.0",
-                "pg": "0.11.3",
+                "pg": "7.12.1",
                 "redis": "0.8.3",
                 "sdc-clients": "12.0.0",
                 "ufds": "1.5.0",
