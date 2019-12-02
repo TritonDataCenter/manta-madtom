@@ -66,7 +66,7 @@ ROOT                    := $(shell pwd)
 RELSTAGEDIR                  := /tmp/$(NAME)-$(STAMP)
 
 BASE_IMAGE_UUID = fd2cc906-8938-11e3-beab-4359c665ac99
-BUILDIMAGE_NAME = mantav1-madtom
+BUILDIMAGE_NAME = mantav2-madtom
 BUILDIMAGE_DESC	= Manta madtom
 BUILDIMAGE_PKGSRC = postgresql91-client-9.1.2 \
 			redis-2.4.13 \
