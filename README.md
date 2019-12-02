@@ -5,7 +5,7 @@
 -->
 
 <!--
-    Copyright (c) 2017, Joyent, Inc.
+    Copyright 2019 Joyent, Inc.
 -->
 
 # manta-madtom
@@ -17,7 +17,19 @@ guidelines, issues, and general documentation, visit the main
 Madtom is the mantified node-checker, so that we have a "pretty" UI for seeing
 which components in the system are currently up.
 
-# Repository
+## Active Branches
+
+There are currently two active branches of this repository, for the two
+active major versions of Manta. See the [mantav2 overview
+document](https://github.com/joyent/manta/blob/master/docs/mantav2.md) for
+details on major Manta versions.
+
+- [`master`](../../tree/master/) - For development of mantav2, the latest
+  version of Manta. This is the version used by Triton.
+- [`mantav1`](../../tree/mantav1/) - For development of mantav1, the long
+  term support maintenance version of Manta.
+
+## Repository
 
     bin/            Commands available in $PATH.
     boot/           Configuration scripts on zone setup.
@@ -35,13 +47,13 @@ which components in the system are currently up.
     package.json    npm module info (holds the project version)
     README.md
 
-# Setup
+## Setup
 
     git clone https://github.com/joyent/manta-madtom.git
     cd manta-madtom
     make all
 
-# Development
+## Development
 
 You first need to generate a hosts configuration file.  If you are working in a
 build zone, you should navigate the filesystem to find the etc/config.json file
@@ -81,7 +93,7 @@ environment depending on where you need to access the browser.
 You should see the status of all processes running in CoaL or your lab
 environment.
 
-# Testing
+## Testing
 
 To run the tests use the command `make test`.  As of April 2017, these tests
 enforce the arguments set by the command line interface.  In order to test
