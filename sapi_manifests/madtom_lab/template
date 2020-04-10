@@ -3,7 +3,6 @@
     {
       "hostType": "loadbalancer",
       "processes": [
-        { "processType": "stud", "port": 443 },
         { "processType": "haproxy", "port": 80 }
       ]
     },
@@ -33,6 +32,14 @@
         { "processType": "electric-moray", "port": 2022 },
         { "processType": "electric-moray", "port": 2023 },
         { "processType": "electric-moray", "port": 2024 }
+      ]
+    },
+    {
+      "hostType": "garbage-collector",
+      "processes": [
+        { "processType": "garbage-buckets-consumer", "port": 8881 },
+        { "processType": "garbage-dir-consumer", "port": 8882 },
+        { "processType": "garbage-uploader", "port": 8883 }
       ]
     },
     {
@@ -67,28 +74,10 @@
       ]
     },
     {
-      "hostType": "jobsupervisor",
-      "processes": [
-        { "processType": "supervisor", "port": 80 }
-      ]
-    },
-    {
       "hostType": "nameservice",
       "processes": [
         { "processType": "binder", "port": 53 },
         { "processType": "zookeeper", "port": 2181 }
-      ]
-    },
-    {
-      "hostType": "medusa",
-      "processes": [
-        { "processType": "medusa", "port": 8381 }
-      ]
-    },
-    {
-      "hostType": "jobpuller",
-      "processes": [
-        { "processType": "wrasse", "port": 80 }
       ]
     },
     {
@@ -97,9 +86,15 @@
       ]
     },
     {
-      "hostType": "marlin-dashboard",
+      "hostType": "pgstatsmon",
       "processes": [
-        { "processType": "marlin-dashboard", "port": 80 }
+        { "processType": "pgstatsmon", "port": 8881 }
+      ]
+    },
+    {
+      "hostType": "prometheus",
+      "processes": [
+        { "processType": "prometheus", "port": 9090 }
       ]
     },
     {
@@ -127,6 +122,24 @@
       "bucket": "manta"
     },
     {
+      "processType": "garbage-buckets-consumer",
+      "checkerType": "http",
+      "path": "/",
+      "secure": false
+    },
+    {
+      "processType": "garbage-dir-consumer",
+      "checkerType": "http",
+      "path": "/",
+      "secure": false
+    },
+    {
+      "processType": "garbage-uploader",
+      "checkerType": "http",
+      "path": "/",
+      "secure": false
+    },
+    {
       "processType": "haproxy",
       "checkerType": "http",
       "path": "/ping",
@@ -146,18 +159,6 @@
       "processType": "minnow",
       "checkerType": "http",
       "path": "/ping",
-      "secure": false
-    },
-    {
-      "processType": "marlin-dashboard",
-      "checkerType": "http",
-      "path": "/index.htm",
-      "secure": false
-    },
-    {
-      "processType": "medusa",
-      "checkerType": "http",
-      "path": "/status",
       "secure": false
     },
     {
@@ -186,6 +187,18 @@
       "username": "postgres"
     },
     {
+      "processType": "pgstatsmon",
+      "checkerType": "http",
+      "path": "/metrics",
+      "secure": false
+    },
+    {
+      "processType": "prometheus",
+      "checkerType": "http",
+      "path": "/",
+      "secure": false
+    },
+    {
       "processType": "mahi-ser",
       "checkerType": "http",
       "path": "/ping",
@@ -202,27 +215,8 @@
       "checkerType": "redis"
     },
     {
-      "processType": "stud",
-      "checkerType": "http",
-      "path": "/ping",
-      "secure": true,
-      "rejectUnauthorized": {{MANTA_REJECT_UNAUTHORIZED}}
-    },
-    {
-      "processType": "supervisor",
-      "checkerType": "http",
-      "path": "/kang/snapshot",
-      "secure": false
-    },
-    {
       "processType": "workflow",
       "checkerType": "tcp"
-    },
-    {
-      "processType": "wrasse",
-      "checkerType": "http",
-      "path": "/ping",
-      "secure": false
     },
     {
       "processType": "zookeeper",
