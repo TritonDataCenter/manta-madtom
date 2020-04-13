@@ -136,19 +136,19 @@
     {
       "processType": "garbage-buckets-consumer",
       "checkerType": "http",
-      "path": "/",
+      "path": "/metrics",
       "secure": false
     },
     {
       "processType": "garbage-dir-consumer",
       "checkerType": "http",
-      "path": "/",
+      "path": "/metrics",
       "secure": false
     },
     {
       "processType": "garbage-uploader",
       "checkerType": "http",
-      "path": "/",
+      "path": "/metrics",
       "secure": false
     },
     {
