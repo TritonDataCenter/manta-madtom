@@ -47,14 +47,6 @@
       ]
     },
     {
-      "hostType": "garbage-collector",
-      "processes": [
-        { "processType": "garbage-buckets-consumer", "port": 8881 },
-        { "processType": "garbage-dir-consumer", "port": 8882 },
-        { "processType": "garbage-uploader", "port": 8883 }
-      ]
-    },
-    {
       "hostType": "moray",
       "processes": [
         { "processType": "haproxy-tcp", "port": 2020 },
@@ -93,23 +85,6 @@
       ]
     },
     {
-      "hostType": "ops",
-      "processes": [
-      ]
-    },
-    {
-      "hostType": "pgstatsmon",
-      "processes": [
-        { "processType": "pgstatsmon", "port": 8881 }
-      ]
-    },
-    {
-      "hostType": "prometheus",
-      "processes": [
-        { "processType": "prometheus", "port": 9090 }
-      ]
-    },
-    {
       "hostType": "workflow",
       "processes": [
         { "processType": "workflow", "port": 80 }
@@ -132,24 +107,6 @@
       "processType": "electric-moray",
       "checkerType": "moray",
       "bucket": "manta"
-    },
-    {
-      "processType": "garbage-buckets-consumer",
-      "checkerType": "http",
-      "path": "/metrics",
-      "secure": false
-    },
-    {
-      "processType": "garbage-dir-consumer",
-      "checkerType": "http",
-      "path": "/metrics",
-      "secure": false
-    },
-    {
-      "processType": "garbage-uploader",
-      "checkerType": "http",
-      "path": "/metrics",
-      "secure": false
     },
     {
       "processType": "haproxy",
@@ -198,19 +155,6 @@
       "checkerType": "postgres",
       "username": "postgres"
     },
-    {
-      "processType": "pgstatsmon",
-      "checkerType": "http",
-      "path": "/metrics",
-      "secure": false
-    },
-    {
-      "processType": "prometheus",
-      "checkerType": "http",
-      "path": "/",
-      "secure": false
-    },
-
     {
       "processType": "mahi-ser",
       "checkerType": "http",
