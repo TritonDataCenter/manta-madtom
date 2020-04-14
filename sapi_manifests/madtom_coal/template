@@ -3,7 +3,6 @@
     {
       "hostType": "loadbalancer",
       "processes": [
-        { "processType": "stud", "port": 443 },
         { "processType": "haproxy", "port": 80 }
       ]
     },
@@ -58,39 +57,10 @@
       ]
     },
     {
-      "hostType": "jobsupervisor",
-      "processes": [
-        { "processType": "supervisor", "port": 80 }
-      ]
-    },
-    {
       "hostType": "nameservice",
       "processes": [
         { "processType": "binder", "port": 53 },
         { "processType": "zookeeper", "port": 2181 }
-      ]
-    },
-    {
-      "hostType": "medusa",
-      "processes": [
-        { "processType": "medusa", "port": 8381 }
-      ]
-    },
-    {
-      "hostType": "jobpuller",
-      "processes": [
-        { "processType": "wrasse", "port": 80 }
-      ]
-    },
-    {
-      "hostType": "ops",
-      "processes": [
-      ]
-    },
-    {
-      "hostType": "marlin-dashboard",
-      "processes": [
-        { "processType": "marlin-dashboard", "port": 80 }
       ]
     },
     {
@@ -140,18 +110,6 @@
       "secure": false
     },
     {
-      "processType": "marlin-dashboard",
-      "checkerType": "http",
-      "path": "/index.htm",
-      "secure": false
-    },
-    {
-      "processType": "medusa",
-      "checkerType": "http",
-      "path": "/status",
-      "secure": false
-    },
-    {
       "processType": "muskie",
       "checkerType": "http",
       "path": "/ping",
@@ -193,27 +151,8 @@
       "checkerType": "redis"
     },
     {
-      "processType": "stud",
-      "checkerType": "http",
-      "path": "/ping",
-      "secure": true,
-      "rejectUnauthorized": {{MANTA_REJECT_UNAUTHORIZED}}
-    },
-    {
-      "processType": "supervisor",
-      "checkerType": "http",
-      "path": "/kang/snapshot",
-      "secure": false
-    },
-    {
       "processType": "workflow",
       "checkerType": "tcp"
-    },
-    {
-      "processType": "wrasse",
-      "checkerType": "http",
-      "path": "/ping",
-      "secure": false
     },
     {
       "processType": "zookeeper",
