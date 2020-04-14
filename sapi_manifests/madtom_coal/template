@@ -51,32 +51,14 @@
       ]
     },
     {
-      "hostType": "agent",
-      "processes": [
-        { "processType": "agent", "port": 9080 }
-      ]
-    },
-    {
       "hostType": "nameservice",
       "processes": [
         { "processType": "binder", "port": 53 },
         { "processType": "zookeeper", "port": 2181 }
       ]
-    },
-    {
-      "hostType": "workflow",
-      "processes": [
-        { "processType": "workflow", "port": 80 }
-      ]
     }
   ],
   "processTypes": [
-    {
-      "processType": "agent",
-      "checkerType": "http",
-      "path": "/kang/snapshot",
-      "secure": false
-    },
     {
       "processType": "binder",
       "checkerType": "dns",
@@ -149,10 +131,6 @@
     {
       "processType": "redis",
       "checkerType": "redis"
-    },
-    {
-      "processType": "workflow",
-      "checkerType": "tcp"
     },
     {
       "processType": "zookeeper",
