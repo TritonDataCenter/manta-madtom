@@ -5,7 +5,7 @@
 #
 
 #
-# Copyright 2019 Joyent, Inc.
+# Copyright 2020 Joyent, Inc.
 #
 
 #
@@ -72,6 +72,9 @@ BUILDIMAGE_PKGSRC = postgresql91-client-9.1.2 \
 			redis-2.4.13 \
 			zookeeper-client-3.4.3
 AGENTS		= amon config registrar
+
+# For mantav1, specify the branch to compare copyrights with
+ENGBLD_CHECK_COPYRIGHT_ARGS = -b mantav1
 
 #
 # v8plus uses the CTF tools as part of its build, but they can safely be
