@@ -1,14 +1,14 @@
 {
         "name": "madtom",
         "description": "Manta Status Dashboard.",
-        "version": "1.0.2",
+        "version": "1.0.3",
         "author": "Joyent (joyent.com)",
         "license": "MPL-2.0",
         "private": true,
         "dependencies": {
                 "assert-plus": "0.1.1",
                 "bunyan": "0.16.6",
-                "checker": "git://github.com/joyent/node-checker#c3df365678c871e017fc6e072781f5d4639a35b9",
+                "checker": "git://github.com/joyent/node-checker#TBD",
                 "moray": "git://github.com/joyent/node-moray.git#debd4617e6810241f51d9256470e7383ab4c2ffd",
                 "posix-getopt": "1.0.0",
                 "pg": "0.11.3",
