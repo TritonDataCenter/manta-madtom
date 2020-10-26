@@ -9,7 +9,7 @@
                 "assert-plus": "0.1.1",
                 "bunyan": "0.16.6",
                 "checker": "git://github.com/joyent/node-checker#c3df365678c871e017fc6e072781f5d4639a35b9",
-                "moray": "git://github.com/joyent/node-moray.git#fd5781bc25a9bfe2ba82167664639753fb9f0ca5",
+                "moray": "git://github.com/joyent/node-moray.git#debd4617e6810241f51d9256470e7383ab4c2ffd",
                 "posix-getopt": "1.0.0",
                 "pg": "0.11.3",
                 "redis": "0.8.3",
