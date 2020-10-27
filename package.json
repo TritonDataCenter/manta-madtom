@@ -8,7 +8,7 @@
         "dependencies": {
                 "assert-plus": "0.1.1",
                 "bunyan": "0.16.6",
-                "checker": "git://github.com/joyent/node-checker#TBD",
+                "checker": "git://github.com/joyent/node-checker#96cb32e9aa904881ae0da5101bd9d6df9e3dd466",
                 "moray": "git://github.com/joyent/node-moray.git#debd4617e6810241f51d9256470e7383ab4c2ffd",
                 "posix-getopt": "1.0.0",
                 "pg": "0.11.3",
